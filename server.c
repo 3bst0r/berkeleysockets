@@ -15,18 +15,13 @@ char lookup(char* city) {
 
 }
 
-/*char** parse_input(char** result, char* str) {
-    char* p = strtok(str,' ');
-
-    for (int i = 0; p != NULL; p = strtok(NULL,' ')) {
-        result[i] = p;
-        i++;
-    }
-    result[i] = null;
-    return result;
-}*/
-
 int main(int args, char** argv) {
+
+    struct sockaddr_in destAddr;
+    struct sockaddr_in sourceAddr;
+
+    memset(&sourceAddr,0,sizeof(sourceAddr));
+    memset(&destAddr,0,sizeof(destAddr));
 
     /* create socket */
     int sock;
@@ -36,13 +31,11 @@ int main(int args, char** argv) {
     }
 
     /* bind socket */
-    struct sockaddr_in svr_sock_addr;
-    memset(&svr_sock_addr,0,sizeof(svr_sock_addr));
-    svr_sock_addr.sin_port = htons(5000);
-    svr_sock_addr.sin_family = AF_INET;
-    svr_sock_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    destAddr.sin_port = htons(5000);
+    destAddr.sin_family = AF_INET;
+    destAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(sock,(struct sockaddr*)&svr_sock_addr,sizeof(svr_sock_addr)) < 0) {
+    if (bind(sock,(struct sockaddr*)&destAddr,sizeof(destAddr)) < 0) {
         printf("%s\n","could not bind");
         return -1;
     }
@@ -53,16 +46,17 @@ int main(int args, char** argv) {
         return -1;
     }
 
-    struct sockaddr_in address_client;
-    memset(&address_client,0,sizeof(address_client));
+
 
     /* accept clients */
     for(;;) {
         int sock_client;
-        socklen_t client_adress_size = sizeof(address_client);
+        socklen_t client_adress_size = sizeof(sourceAddr);
         printf("%s","now accepting clients\n");
-        if ((sock_client = accept(sock,(struct sockaddr*)&address_client,&client_adress_size) < 0)) {
+        if ((sock_client = accept(sock,(struct sockaddr*)&sourceAddr,&client_adress_size) < 0)) {
             printf("%s\n","accept error");
+        } else {
+            printf("%s %s\n","accepted ",inet_ntoa(sourceAddr.sin_addr));
         }
 
         pid_t child_pid;
@@ -71,14 +65,19 @@ int main(int args, char** argv) {
             return -1;
         } else if (child_pid == 0) { // client process handling
             printf("%s","forking the server\n");
-            char buf[50];
+            char buf[512];
             int length;
-            if ((length = recv(sock,&buf,5,0)) < 0) {
+            if ((length = recv(sock_client,buf,512,0)) < 0) {
                 printf("%s\n","error receiving message");
             } else {
                 buf[length] = '\0';
                 printf("%s\n",buf);
 
+            /*if (send(sock,"answer",strlen(argv[i]),0) < 0) {
+                printf("%s\n","error sending");
+            } else {
+                printf("%s %s %s %zu\n","sent message: ",argv[i]," of length: ",strlen(argv[i]));
+            }*/
 
                 /* now send back */
             }
