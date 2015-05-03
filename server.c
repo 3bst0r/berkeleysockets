@@ -10,9 +10,66 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-/* returns the gefährdung as char */
+int marked[9];
+
+/* returns the degree as char or 'e' in case of a corrupted client */
 char lookup(char* city) {
 
+    if (strcmp(city,"BREGENZ") == 0) {
+        if (marked[0]) return 'e';
+        marked[0] = 1;
+        return '5';
+    }
+
+    if (strcmp(city,"EISENSTADT") == 0) {
+        if (marked[1]) return 'e';
+        marked[1] = 1;
+        return '7';
+    }
+
+    if (strcmp(city,"GRAZ") == 0) {
+        if (marked[2]) return 'e';
+        marked[2] = 1;
+        return '5';
+    }
+
+    if (strcmp(city,"INNSBRUCK") == 0) {
+        if (marked[3]) return 'e';
+        marked[3] = 1;
+        return '2';
+    }
+
+    if (strcmp(city,"KLAGENFURT") == 0) {
+        if (marked[4]) return 'e';
+        marked[4] = 1;
+        return '7';
+    }
+
+    if (strcmp(city,"LINZ") == 0) {
+        if (marked[5]) return 'e';
+        marked[5] = 1;
+        return '7';
+    }
+
+    if (strcmp(city,"SALZBURG") == 0) {
+        if (marked[6]) return 'e';
+        marked[6] = 1;
+        return '3';
+    }
+
+    if (strcmp(city,"STPOELTEN") == 0) {
+        if (marked[7]) return 'e';
+        marked[7] = 1;
+        return '4';
+    }
+
+    if (strcmp(city,"WIEN") == 0) {
+        if (marked[8]) return 'e';
+        marked[8] = 1;
+        return '9';
+    }
+
+    return 'e';
 }
 
 int main(int args, char** argv) {
@@ -65,19 +122,15 @@ int main(int args, char** argv) {
             return -1;
         } else if (child_pid == 0) { // client process handling
             printf("%s","forking the server\n");
+            for (int i = 0; i < 9; i++) marked[i] = 0;
+
             char buf[512];
             int length;
             if ((length = recv(sock_client,buf,512,0)) < 0) {
                 printf("%s\n","error receiving message");
             } else {
                 buf[length] = '\0';
-                printf("%s\n",buf);
 
-            /*if (send(sock,"answer",strlen(argv[i]),0) < 0) {
-                printf("%s\n","error sending");
-            } else {
-                printf("%s %s %s %zu\n","sent message: ",argv[i]," of length: ",strlen(argv[i]));
-            }*/
 
                 /* now send back */
             }
