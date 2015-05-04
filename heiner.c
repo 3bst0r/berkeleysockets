@@ -67,8 +67,10 @@ int main(int args, char** argv) {
         } else {
             printf("%s: %c\n",argv[i],buf);
         }
-    }
 
+
+    }
+    close();
 
     return 0;
 }

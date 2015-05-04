@@ -132,6 +132,8 @@ int main(int args, char** argv) {
             if ((length = recv(sock_client,buf,512,0)) < 0) {
                 perror("recv: ");
                 printf("%s\n","error receiving message");
+            } else if (length == 0) {
+                printf("closing\n");
             } else {
                 buf[length] = '\0';
             }
