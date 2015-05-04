@@ -53,14 +53,16 @@ int main(int args, char** argv) {
     /* now readwrite */
 
     char buf;
-    for (int i = 2; i < args+1; i++) {
-        if (send(sock,argv[i],strlen(argv[i])+1,0) < 0) {
+    for (int i = 2; i < args; i++) {
+
+        if (send(sock,strcat(argv[i],"\0\n"),strlen(argv[i])+1,0) < 0) {
             printf("%s\n","error sending");
         } else {
-            printf("%s %s %s %zu\n","sent message: ",argv[i]," of length: ",strlen(argv[i])+1);
+            printf("sent\n");
         }
 
         if (recv(sock,(char*)&buf,sizeof(char),0) < 0) {
+            perror("recv: ");
             printf("%s\n","error receiving");
         } else {
             printf("%s: %c\n",argv[i],buf);

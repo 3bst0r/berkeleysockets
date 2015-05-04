@@ -77,6 +77,9 @@ int main(int args, char** argv) {
     struct sockaddr_in destAddr;
     struct sockaddr_in sourceAddr;
 
+    for (int i = 0; i < 9; i++) marked[i] = 0;
+
+
     memset(&sourceAddr,0,sizeof(sourceAddr));
     memset(&destAddr,0,sizeof(destAddr));
 
@@ -110,7 +113,7 @@ int main(int args, char** argv) {
         int sock_client;
         socklen_t client_adress_size = sizeof(sourceAddr);
         printf("%s","now accepting clients\n");
-        if ((sock_client = accept(sock,(struct sockaddr*)&sourceAddr,&client_adress_size) < 0)) {
+        if ((sock_client = accept(sock,(struct sockaddr*)&sourceAddr,&client_adress_size)) < 0) {
             printf("%s\n","accept error");
         } else {
             printf("%s %s\n","accepted ",inet_ntoa(sourceAddr.sin_addr));
@@ -121,21 +124,24 @@ int main(int args, char** argv) {
             printf("%s\n","error forking server");
             return -1;
         } else if (child_pid == 0) { // client process handling
+            //close(sock);
             printf("%s","forking the server\n");
-            for (int i = 0; i < 9; i++) marked[i] = 0;
 
             char buf[512];
             int length;
             if ((length = recv(sock_client,buf,512,0)) < 0) {
+                perror("recv: ");
                 printf("%s\n","error receiving message");
             } else {
                 buf[length] = '\0';
-
-
-                /* now send back */
             }
 
-
+            char sendbuf[3] = {lookup(buf),'\0','\n'};
+            if (send(sock_client,sendbuf,3,0) < 0) {
+                printf("error sending\n");
+            } else {
+                printf("sent\n");
+            }
 
         }
     }
