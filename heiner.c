@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 /*char** parse_input(char** result, char* str) {
     char* p = strtok(str,' ');
@@ -52,7 +53,7 @@ int main(int args, char** argv) {
 
     /* now readwrite */
 
-    char buf;
+    char buf[512];
     for (int i = 2; i < args; i++) {
 
         if (send(sock,strcat(argv[i],"\0\n"),strlen(argv[i])+1,0) < 0) {
@@ -60,17 +61,21 @@ int main(int args, char** argv) {
         } else {
             printf("sent\n");
         }
-
-        if (recv(sock,(char*)&buf,sizeof(char),0) < 0) {
+        int length;
+        if ((length = recv(sock,(char*)&buf,512*sizeof(char),0)) < 0) {
             perror("recv: ");
-            printf("%s\n","error receiving");
+            printf("%s\n", "error receiving");
+        } else if (length == 0) {
+            printf("hacking attack aborted\n");
+            return 1;
         } else {
-            printf("%s: %c\n",argv[i],buf);
+           buf[length] = '\0';
+           printf("%s: %s\n",argv[i],buf);
         }
 
 
     }
-    close();
+    close(sock);
 
     return 0;
 }

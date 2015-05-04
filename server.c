@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 int marked[9];
 
@@ -72,7 +73,7 @@ char lookup(char* city) {
     return 'e';
 }
 
-int main(int args, char** argv) {
+int main() {
 
     struct sockaddr_in destAddr;
     struct sockaddr_in sourceAddr;
@@ -124,27 +125,34 @@ int main(int args, char** argv) {
             printf("%s\n","error forking server");
             return -1;
         } else if (child_pid == 0) { // client process handling
-            //close(sock);
             printf("%s","forking the server\n");
 
             char buf[512];
             int length;
-            if ((length = recv(sock_client,buf,512,0)) < 0) {
-                perror("recv: ");
-                printf("%s\n","error receiving message");
-            } else if (length == 0) {
-                printf("closing\n");
-            } else {
-                buf[length] = '\0';
-            }
 
-            char sendbuf[3] = {lookup(buf),'\0','\n'};
-            if (send(sock_client,sendbuf,3,0) < 0) {
-                printf("error sending\n");
-            } else {
-                printf("sent\n");
+            for(;;) {
+                if ((length = recv(sock_client,buf,512,0)) < 0) {
+                    perror("recv: ");
+                    printf("%s\n","error receiving message");
+                } else if (length == 0) {
+                    printf("closing\n");
+                    return 1;
+                } else {
+                    char c = lookup(buf);
+                    char sendbuf[3] = {c,'\0','\n'};
+                    if (c == 'e') {
+                        printf("hacker detected\n");
+                        close(sock);
+                        close(sock_client);
+                        return 1;
+                    }
+                    if (send(sock_client,sendbuf,3,0) < 0) {
+                        printf("error sending\n");
+                    } else {
+                        printf("sent\n");
+                    }
+                }
             }
-
         }
     }
 
